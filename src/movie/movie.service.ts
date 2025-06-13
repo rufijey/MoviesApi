@@ -96,10 +96,10 @@ class MovieService {
 
     async listMovies(query: ListMoviesQuery) {
         const {
-            sort = 'id',
-            order = 'ASC',
-            limit = 20,
-            offset = 0,
+            sort,
+            order,
+            limit,
+            offset,
             title,
             actor,
             search,
