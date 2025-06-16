@@ -140,19 +140,32 @@ class MovieService {
             ];
         }
 
-        const movies = await Movie.findAndCountAll({
+        const movies = await Movie.findAll({
             where,
             include,
-            order: [[sort, order]],
-            limit,
-            offset,
-            distinct: true,
-            attributes: {exclude: []},
+            attributes: {exclude: []}
+        });
+
+        const factor = order === 'DESC' ? -1 : 1;
+
+        movies.sort((a, b) => {
+            const aVal = (a as any)[sort];
+            const bVal = (b as any)[sort];
+
+            if (typeof aVal === 'string' && typeof bVal === 'string') {
+                return aVal.localeCompare(bVal, 'uk', {sensitivity: 'base'}) * factor;
+            }
+
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return (aVal - bVal) * factor;
+            }
+
+            return 0;
         });
 
         return {
-            data: movies.rows,
-            total: movies.count,
+            data: movies.slice(offset, offset + limit),
+            total: movies.length,
         };
     }
 

@@ -3,6 +3,7 @@ import movieService from "./movie.service";
 import {updateMovieSchema} from "./dto/update-movie.dto";
 import {createMovieSchema} from "./dto/create-movie.dto";
 import {listMoviesQuerySchema} from "./dto/list-movies.dto";
+import HttpError from "../shared/errors/HttpError";
 
 class MovieController {
     async create(req: Request, res: Response) {
@@ -81,10 +82,19 @@ class MovieController {
             res.status(400).json({message: 'No file uploaded'});
             return;
         }
+        if (file.mimetype !== 'text/plain') {
+            res.status(400).json({message: 'Unsupported file format. Only .txt files are allowed.'});
+            return;
+        }
 
         const content = file.buffer.toString('utf-8');
-        const importedMovies = await movieService.importFromText(content);
 
+        if (content.length === 0) {
+            res.status(400).json({message: 'Uploaded file is empty.'});
+            return;
+        }
+
+        const importedMovies = await movieService.importFromText(content);
         res.status(201).json({
             data: importedMovies,
             imported: importedMovies.length,
